@@ -50,7 +50,22 @@ HANDLE InitSerial(char *serialPort)
 }
 
 HANDLE hSerial = NULL;
-int main() {
+
+char ActorEXE_PATH[256];
+
+int main(int argc, char *argv[])
+{
+    strcpy(ActorEXE_PATH, argv[0]);
+    char *lastBackslash = strrchr(ActorEXE_PATH, '\\');
+    strcpy(lastBackslash + 1, "action_win.exe");
+    FILE *fp = fopen(ActorEXE_PATH, "rb");
+    if (fp == NULL) {
+        printf("Please make sure the action_win.exe is in the same directory as the trigger_serial.exe\n");
+        return 1;
+    }
+    fclose(fp);
+    fp = NULL;
+
     start:
     hSerial = NULL;
     while(hSerial == NULL) {
@@ -70,14 +85,18 @@ int main() {
                 printf("Received: %s\n", buffer);
                 if(strcmp(buffer, "ALERT") == 0) {
                     printf("Triggering action\n");
-                    system("action_win.exe");
+                    ShellExecute(NULL, "open", ActorEXE_PATH, NULL, NULL, SW_SHOWNORMAL);
                 }
             }
         } else {
             UINT16 errorCode = GetLastError();
             switch(errorCode) {
-                case ERROR_INVALID_HANDLE:
-                    printf("Serial port is closed, Reopening\n");
+                case ERROR_NOT_READY: // error 21
+                case ERROR_BAD_COMMAND: // error 22
+                case ERROR_OPERATION_ABORTED: // error 995
+                    printf("Serial port is closed, Will try to reopen\n");
+                    printf("Consider of Sensor Device Died, will TRIGGER the action\n");
+                    ShellExecute(NULL, "open", ActorEXE_PATH, NULL, NULL, SW_SHOWNORMAL);
                     CloseHandle(hSerial);
                     goto start;
                 default:
