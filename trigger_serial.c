@@ -67,13 +67,13 @@ int main(int argc, char *argv[])
     fp = NULL;
 
     start:
-    hSerial = NULL;
-    while(hSerial == NULL) {
+    while (1) {
         hSerial = InitSerial(SERIAL_PORT);
-        if(hSerial == NULL) {
-            printf("Waiting for serial port to be available, Pls Make Sure the %s is available\n", SERIAL_PORT);
-            Sleep(1000);
+        if(hSerial) {
+            break;
         }
+        printf("Waiting for serial port to be available, Pls Make Sure the %s is available\n", SERIAL_PORT);
+        Sleep(1000);
     }
 
     char buffer[256];
@@ -105,9 +105,4 @@ int main(int argc, char *argv[])
             }
         }
     }
-
-    CloseHandle(hSerial);
-    printf("Serial port closed\n");
-
-    return 0;
 }
