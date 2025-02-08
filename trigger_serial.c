@@ -1,7 +1,36 @@
 #include <windows.h>
 #include <stdio.h>
+#include <tlhelp32.h>
 
 #define SERIAL_PORT "COM3"
+
+int get_pop_num(char *the_exe_name_ascii)
+{
+    wchar_t the_exe_name[MAX_PATH];
+    mbstowcs(the_exe_name, the_exe_name_ascii, MAX_PATH);
+    wprintf(L"Checking for clones of %s\n", the_exe_name);
+
+    PROCESSENTRY32W pe = {sizeof(PROCESSENTRY32W), 0};
+    HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (!Process32FirstW(hSnapShot, &pe)) {
+        printf("Failed to enumerate processes.\n");
+        exit(1);
+    }
+    int clone_count = 0;
+    do {
+        if (wcsncmp(pe.szExeFile, the_exe_name, MAX_PATH) == 0) {
+            clone_count++;
+        }
+    } while (Process32NextW(hSnapShot, &pe));
+    CloseHandle(hSnapShot);
+    return clone_count;
+}
+
+#define SMART_LAUNCH_ACTION \
+    if(get_pop_num("action_win.exe") == 0) \
+        ShellExecute(NULL, "open", ActorEXE_PATH, NULL, NULL, SW_SHOWNORMAL); \
+    else \
+        printf("The Action is already going on!\n");
 
 HANDLE InitSerial(char *serialPort)
 {
@@ -51,13 +80,16 @@ HANDLE InitSerial(char *serialPort)
 
 HANDLE hSerial = NULL;
 
-char ActorEXE_PATH[256];
-
 int main(int argc, char *argv[])
 {
+    if(get_pop_num(strrchr(argv[0], '\\') + 1) > 1) {
+        printf("Another Instance of Mine is Already Running, Exiting...\n");
+        return 0;
+    }
+
+    char ActorEXE_PATH[256];
     strcpy(ActorEXE_PATH, argv[0]);
-    char *lastBackslash = strrchr(ActorEXE_PATH, '\\');
-    strcpy(lastBackslash + 1, "action_win.exe");
+    strcpy(strrchr(ActorEXE_PATH, '\\') + 1, "action_win.exe");
     FILE *fp = fopen(ActorEXE_PATH, "rb");
     if (fp == NULL) {
         printf("Please make sure the action_win.exe is in the same directory as the trigger_serial.exe\n");
@@ -85,7 +117,7 @@ int main(int argc, char *argv[])
                 printf("Received: %s\n", buffer);
                 if(strcmp(buffer, "ALERT") == 0) {
                     printf("Triggering action\n");
-                    ShellExecute(NULL, "open", ActorEXE_PATH, NULL, NULL, SW_SHOWNORMAL);
+                    SMART_LAUNCH_ACTION
                 }
             }
         } else {
@@ -96,7 +128,7 @@ int main(int argc, char *argv[])
                 case ERROR_OPERATION_ABORTED: // error 995
                     printf("Serial port is closed, Will try to reopen\n");
                     printf("Consider of Sensor Device Died, will TRIGGER the action\n");
-                    ShellExecute(NULL, "open", ActorEXE_PATH, NULL, NULL, SW_SHOWNORMAL);
+                    SMART_LAUNCH_ACTION
                     CloseHandle(hSerial);
                     goto start;
                 default:
