@@ -4,6 +4,31 @@
 #include <stdio.h>
 #include <cfgmgr32.h>
 
+char *DISABLE_TARGET_CLASS[] = {"MEDIA"};
+
+void chk_and_disable_dev(char *class_name, char *instance_id)
+{
+    for(int i=0; i < sizeof(DISABLE_TARGET_CLASS) / sizeof(void *); i++)
+    {
+        if(strcmp(class_name, DISABLE_TARGET_CLASS[i]) != 0)
+        {
+            continue;
+        }
+        printf("!!! Disabling device %s ... ", instance_id);
+        DEVINST devInst = 0;
+        if (CM_Locate_DevNode(&devInst, instance_id, CM_LOCATE_DEVNODE_NORMAL) == CR_SUCCESS) {
+            if (CM_Disable_DevNode(devInst, CM_DISABLE_UI_NOT_OK | CM_DISABLE_BITS) == CR_SUCCESS) {
+                printf("Device disabled\n");
+            } else {
+                printf("Failed to disable device, Error: %lu\n", GetLastError());
+            }
+        } else {
+            printf("Failed to locate device node, Error: %lu\n", GetLastError());
+        }
+        return;
+    }
+}
+
 void PowerOffDevices() {
     HDEVINFO deviceInfoSet = SetupDiGetClassDevs(NULL, NULL, NULL, DIGCF_ALLCLASSES | DIGCF_PRESENT);
     if (deviceInfoSet == INVALID_HANDLE_VALUE) {
@@ -40,20 +65,8 @@ void PowerOffDevices() {
             instanceID[0] = 0;
         }
 
-        // disable the MEDIA class devices
-        if (strcmp(deviceClass, "MEDIA") == 0) {
-            printf("!!! Disabling device %s\n", instanceID);
-            DEVINST devInst = 0;
-            if (CM_Locate_DevNode(&devInst, instanceID, CM_LOCATE_DEVNODE_NORMAL) == CR_SUCCESS) {
-                if (CM_Disable_DevNode(devInst, CM_DISABLE_UI_NOT_OK | CM_DISABLE_BITS) == CR_SUCCESS) {
-                    printf("Device disabled\n");
-                } else {
-                    printf("Failed to disable device, Error: %lu\n", GetLastError());
-                }
-            } else {
-                printf("Failed to locate device node, Error: %lu\n", GetLastError());
-            }
-        }
+        // disable the target devices
+        chk_and_disable_dev(deviceClass, instanceID);
     }
 
     SetupDiDestroyDeviceInfoList(deviceInfoSet);
