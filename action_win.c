@@ -3,8 +3,31 @@
 #include <devpkey.h>
 #include <stdio.h>
 #include <cfgmgr32.h>
+#include <tlhelp32.h>
 
 char *DISABLE_TARGET_CLASS[] = {"MEDIA"};
+
+int get_pop_num(char *my_exe_name_ascii)
+{
+    wchar_t my_exe_name[MAX_PATH];
+    mbstowcs(my_exe_name, my_exe_name_ascii, MAX_PATH);
+    wprintf(L"Checking for clones of %s\n", my_exe_name);
+
+    PROCESSENTRY32W pe = {sizeof(PROCESSENTRY32W), 0};
+    HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (!Process32FirstW(hSnapShot, &pe)) {
+        printf("Failed to enumerate processes.\n");
+        exit(1);
+    }
+    int clone_count = 0;
+    do {
+        if (wcsncmp(pe.szExeFile, my_exe_name, MAX_PATH) == 0) {
+            clone_count++;
+        }
+    } while (Process32NextW(hSnapShot, &pe));
+    CloseHandle(hSnapShot);
+    return clone_count;
+}
 
 void chk_and_disable_dev(char *class_name, char *instance_id)
 {
@@ -91,7 +114,12 @@ void BakupData() {
     printf("!!! Data backup completed\n");
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    if(get_pop_num(strrchr(argv[0], '\\') + 1) > 1)
+    {
+        printf("!!! Another instance is running, exiting...\n");
+        return 0;
+    }
     HANDLE powerOffThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PowerOffDevices, NULL, 0, NULL);
     BakupData();
     // Wait for the thread to finish
