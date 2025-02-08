@@ -68,11 +68,33 @@ void PowerOffDevices() {
         // disable the target devices
         chk_and_disable_dev(deviceClass, instanceID);
     }
-
     SetupDiDestroyDeviceInfoList(deviceInfoSet);
 }
 
+void BakupData() {
+    // assume we copy C:\Important -> Y:\BakupFolder
+    //first, we need to check if Y: is mounted
+    DWORD dwResult = GetFileAttributes("Y:");
+    if (dwResult == INVALID_FILE_ATTRIBUTES) {
+        printf("!!! Y: is not mounted\n");
+        return;
+    }
+    // then we need to check if Y:\BakupFolder exists
+    if (GetFileAttributes("Y:\\BakupFolder") == INVALID_FILE_ATTRIBUTES) {
+        if (!CreateDirectory("Y:\\BakupFolder", NULL)) {
+            printf("!!! Failed to create directory Y:\\BakupFolder, Error: %lu\n", GetLastError());
+            return;
+        }
+    }
+    // finally, we copy the data
+    system("robocopy C:\\Important Y:\\BakupFolder /E /V /MT:8");
+    printf("!!! Data backup completed\n");
+}
+
 int main() {
-    PowerOffDevices();
+    HANDLE powerOffThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PowerOffDevices, NULL, 0, NULL);
+    BakupData();
+    // Wait for the thread to finish
+    WaitForSingleObject(powerOffThread, INFINITE);
     return 0;
 }
