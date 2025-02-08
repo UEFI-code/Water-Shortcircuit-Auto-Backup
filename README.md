@@ -16,7 +16,7 @@ We assume that the `C:\Important` folder contains your important data, and `Y:\`
 
 We assume you are using Windows 7 / Windows Server 2008 x64 or later. (If you are on a 32-bit system, please recompile the source code.)
 
-Simply double-click `trigger_serial.exe` to try out this software, and run `install.bat` to install this software as a scheduled task.
+To try this system, build and flash `Arduino_Sample/Arduino_Sample.ino` to your Arduino board, and make sure the board is assigned to COM port `COM3`. Then double-click `trigger_serial.exe` to test, and run `install.bat` to install this software as a scheduled task.
 
 ## Linux
 
@@ -26,7 +26,7 @@ Under development.
 
 Under development.
 
-# Acknowledgement
-This implementation is under patent CN2020107900105, and the inventor is Zhang Shizhuo.
+# License
+This implementation is under patent CN2020107900105, and the inventor & copyright holder is `ZHANG SHIZHUO`.
 
 If you are interested in implementing this system, please email `zhuoshizhang@hotmail.com` for queries.
