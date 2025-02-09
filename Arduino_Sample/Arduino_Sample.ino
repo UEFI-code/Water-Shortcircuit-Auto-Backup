@@ -1,4 +1,4 @@
-#define threshold 512
+#define threshold 300
 
 void setup()
 {
@@ -13,7 +13,7 @@ char StatusBuffer[16] = {'I', 'D', 'L', 'E', ' ', 0};
 void loop()
 {
     sensorValue = analogRead(A0);
-    if (sensorValue > threshold)
+    if (sensorValue < threshold) // assume shortcut to ground
     {
         Serial.print("ALERT");
     }
