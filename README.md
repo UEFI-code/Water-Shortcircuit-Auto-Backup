@@ -18,6 +18,12 @@ We assume you are using Windows 7 / Windows Server 2008 x64 or later. (If you ar
 
 To try this system, build and flash `Arduino_Sample/Arduino_Sample.ino` to your Arduino board, and make sure the board is assigned to COM port `COM3`. Then double-click `trigger_serial.exe` to test, and run `install.bat` to install this software as a scheduled task.
 
+Pls note, the drive `Y:\` should be available at earlier time before the disaster happens. If you are using SMB, you can use `net use Y: \\server\share` to map the drive, and `Y:\` will be become available after you log in. You may enable auto-login by setting the following registry keys:
+
+- "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\AutoAdminLogon" to 1
+- "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultUserName" to your username
+- "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultPassword" to your password
+
 ## Linux
 
 Under development.
