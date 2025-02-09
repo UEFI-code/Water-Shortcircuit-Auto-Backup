@@ -4,9 +4,19 @@
 
 This project contains a sensor system and software components that can monitor hardware test points' potential or impedance, shut down unnecessary hardware components, and back up data to a remote server in case of water-caused short circuits or other disasters.
 
+Our solution is very useful for data centers, and much lower cost than traditional Fully_Geographic-Redundant-Solution (F_GRS) systems.
+
 # Hardware Implementation
 
-We provide an Arduino-based sensor system, using the serial port for feedback on potential status.
+We provide an Arduino-based sensor system, using the serial port for feedback on potential status. You may replace the Arduino with any other microcontroller and using any other communication method, as long as the system can provide the potential status of the test points.
+
+If you choose our implementation, you will need the following steps:
+
+1. Attach a potential board to your server's metal case, and connect the board to the Arduino's `A0` pin.
+2. Attach a resistor between the Arduino's `3.3v` pin and the `A0` pin.
+3. Connect the Arduino to your server's USB port.
+4. Check the GND connection between the Arduino and the server.
+5. Follow the software implementation steps.
 
 # Software Implementation
 
