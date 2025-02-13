@@ -43,6 +43,6 @@ Under development.
 Under development.
 
 # License
-This implementation is under patent CN2020107900105, and the inventor & copyright holder is `ZHANG SHIZHUO`.
+This implementation is under patent CN-B-111901961(CN2020107900105), and the inventor & copyright holder is `ZHANG SHIZHUO`.
 
 If you are interested in implementing this system, please email `zhuoshizhang@hotmail.com` for queries.
